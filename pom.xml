@@ -28,6 +28,17 @@
             <artifactId>spring-boot-starter-web</artifactId>
         </dependency>
 
+        <!--
+            Mensajeria: catalog recibe/emite notificaciones puntuales sobre
+            stock/cupo (ej. alertas de bajo stock) via colas RabbitMQ. No usa
+            Kafka: no es la fuente de un stream de eventos de dominio, esa
+            responsabilidad es de bookings.
+        -->
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-amqp</artifactId>
+        </dependency>
+
         <!-- Persistencia JPA -->
         <dependency>
             <groupId>org.springframework.boot</groupId>

@@ -1,5 +1,5 @@
 server:
-  port: 8083
+  port: 8081
 
 spring:
   application:
@@ -33,6 +33,11 @@ spring:
         order_inserts: true
         order_updates: true
 
+  # Broker externo de notificaciones (ver spring-boot-starter-amqp en el pom.xml).
+  rabbitmq:
+    host: ${RABBITMQ_HOST:54.234.173.1}
+    port: ${RABBITMQ_PORT:5672}
+
 management:
   endpoints:
     web:
@@ -41,6 +46,13 @@ management:
   endpoint:
     health:
       show-details: when-authorized
+  health:
+    # El healthcheck de Docker depende de /actuator/health devolviendo 200;
+    # el indicador automatico de RabbitMQ prueba conectividad real contra el
+    # broker (externo, fuera de esta red) y lo tumbaria a DOWN si ese broker
+    # no esta disponible en este momento, aunque la app en si funcione bien.
+    rabbit:
+      enabled: false
 
 logging:
   level:
