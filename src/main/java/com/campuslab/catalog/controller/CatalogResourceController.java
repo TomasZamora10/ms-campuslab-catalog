@@ -42,6 +42,19 @@ public class CatalogResourceController {
     }
 
     /**
+     * GET /api/catalog/resources/{id}
+     * Obtiene el detalle de un recurso puntual del catálogo. Lo consume, entre
+     * otros, ms-campuslab-bookings para verificar el stock/cupo antes de
+     * aprobar una reserva.
+     */
+    @GetMapping("/{id}")
+    public ResponseEntity<CatalogResource> obtenerPorId(@PathVariable Long id) {
+        return repository.findById(id)
+                .map(ResponseEntity::ok)
+                .orElseGet(() -> ResponseEntity.notFound().build());
+    }
+
+    /**
      * POST /api/catalog/resources
      * Crea un nuevo laboratorio, equipo o insumo en el catálogo.
      */
