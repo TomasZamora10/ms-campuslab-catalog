@@ -1,6 +1,7 @@
 package com.campuslab.catalog.controller;
 
 import com.campuslab.catalog.dto.StockUpdateRequest;
+import com.campuslab.catalog.messaging.CatalogEventPublisher;
 import com.campuslab.catalog.model.CatalogResource;
 import com.campuslab.catalog.model.ResourceType;
 import com.campuslab.catalog.repository.CatalogResourceRepository;
@@ -20,9 +21,11 @@ import java.util.List;
 public class CatalogResourceController {
 
     private final CatalogResourceRepository repository;
+    private final CatalogEventPublisher eventPublisher;
 
-    public CatalogResourceController(CatalogResourceRepository repository) {
+    public CatalogResourceController(CatalogResourceRepository repository, CatalogEventPublisher eventPublisher) {
         this.repository = repository;
+        this.eventPublisher = eventPublisher;
     }
 
     /**
@@ -82,6 +85,7 @@ public class CatalogResourceController {
                 .map(existing -> {
                     existing.setStockCupo(request.getStockCupo());
                     CatalogResource updated = repository.save(existing);
+                    eventPublisher.publicarStockAgotadoSiCorresponde(updated);
                     return ResponseEntity.ok(updated);
                 })
                 .orElseGet(() -> ResponseEntity.notFound().build());

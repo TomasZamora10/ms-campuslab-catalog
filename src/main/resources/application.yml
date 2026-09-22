@@ -33,10 +33,15 @@ spring:
         order_inserts: true
         order_updates: true
 
-  # Broker externo de notificaciones (ver spring-boot-starter-amqp en el pom.xml).
+  # Cluster RabbitMQ self-hosted (infra/mq), publica la alerta de stock
+  # agotado para que ms-campuslab-notify la reenvie por email. Credenciales
+  # de desarrollo local (admin/admin_dev); en EC2 se sobrescriben via
+  # variables de entorno desde un .env fuera de control de versiones.
   rabbitmq:
     host: ${RABBITMQ_HOST:54.234.173.1}
     port: ${RABBITMQ_PORT:5672}
+    username: ${RABBITMQ_USERNAME:admin}
+    password: ${RABBITMQ_PASSWORD:admin_dev}
 
 management:
   endpoints:
