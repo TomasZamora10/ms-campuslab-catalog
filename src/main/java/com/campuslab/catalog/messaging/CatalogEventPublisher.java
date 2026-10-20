@@ -1,5 +1,6 @@
 package com.campuslab.catalog.messaging;
 
+import com.campuslab.catalog.config.RabbitMqProperties;
 import com.campuslab.catalog.model.CatalogResource;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -13,13 +14,12 @@ import java.util.LinkedHashMap;
 import java.util.Map;
 
 /**
- * Publica a RabbitMQ (exchange cmd.topic, ya declarado por infra/mq/definitions.json)
- * la alerta de stock/cupo agotado, para que ms-campuslab-notify avise por
- * email al equipo administrador. Usa el exchange topic (routing key
- * "email.stock-agotado") en vez del direct porque este es un evento de
- * alerta interna, no una notificacion dirigida a un estudiante puntual; el
- * binding "email.*" -> q.cmd.email ya cubre este caso sin necesitar una cola
- * o binding nuevo.
+ * Publica a RabbitMQ la alerta de stock/cupo agotado, para que
+ * ms-campuslab-notify avise por email al equipo administrador. Exchange y
+ * routing key vienen de application.yml (campuslab.rabbitmq.*, ver
+ * RabbitMqProperties / RabbitMqConfig). Usa el exchange topic en vez del
+ * direct porque es una alerta interna, no una notificacion dirigida a un
+ * estudiante puntual; el binding "email.*" -> q.cmd.email cubre este caso.
  *
  * Es best-effort: si el broker no esta disponible, se registra el error pero
  * no se interrumpe la actualizacion de stock.
@@ -29,11 +29,9 @@ import java.util.Map;
 @Slf4j
 public class CatalogEventPublisher {
 
-    private static final String EXCHANGE = "cmd.topic";
-    private static final String ROUTING_KEY = "email.stock-agotado";
-
     private final RabbitTemplate rabbitTemplate;
     private final ObjectMapper objectMapper;
+    private final RabbitMqProperties props;
 
     public void publicarStockAgotadoSiCorresponde(CatalogResource recurso) {
         if (recurso.getStockCupo() == null || recurso.getStockCupo() > 0) {
@@ -50,7 +48,7 @@ public class CatalogEventPublisher {
 
         try {
             String json = objectMapper.writeValueAsString(envelope);
-            rabbitTemplate.convertAndSend(EXCHANGE, ROUTING_KEY, json);
+            rabbitTemplate.convertAndSend(props.exchange(), props.stockAgotadoRoutingKey(), json);
             log.info("Evento STOCK_AGOTADO publicado (recursoId={}, eventId={})",
                     recurso.getId(), envelope.eventId());
         } catch (JsonProcessingException ex) {

@@ -1,0 +1,13 @@
+# Perfil de pruebas: H2 en memoria (modo Oracle) en vez de Oracle real.
+# RabbitTemplate se reemplaza por un mock en los tests, asi que no se
+# necesita un broker.
+spring:
+  datasource:
+    url: jdbc:h2:mem:catalog;MODE=Oracle;DB_CLOSE_DELAY=-1
+    username: sa
+    password:
+    driver-class-name: org.h2.Driver
+  jpa:
+    database-platform: org.hibernate.dialect.H2Dialect
+    hibernate:
+      ddl-auto: create-drop
