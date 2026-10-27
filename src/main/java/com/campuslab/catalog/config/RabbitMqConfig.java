@@ -38,9 +38,20 @@ public class RabbitMqConfig {
      */
     @Bean
     public RabbitTemplateCustomizer mensajesNoEnrutadosCustomizer() {
-        return template -> template.setReturnsCallback(returned -> log.error(
-                "Mensaje NO entregado por RabbitMQ: exchange={} routingKey={} replyCode={} replyText={} cuerpo={}",
-                returned.getExchange(), returned.getRoutingKey(), returned.getReplyCode(), returned.getReplyText(),
-                new String(returned.getMessage().getBody(), StandardCharsets.UTF_8)));
+        return template -> {
+            template.setReturnsCallback(returned -> log.error(
+                    "Mensaje NO entregado por RabbitMQ: exchange={} routingKey={} replyCode={} replyText={} cuerpo={}",
+                    returned.getExchange(), returned.getRoutingKey(), returned.getReplyCode(), returned.getReplyText(),
+                    new String(returned.getMessage().getBody(), StandardCharsets.UTF_8)));
+            // publisher-confirm-type=correlated: el broker confirma cada envio.
+            // Sin esto, un exchange borrado cerraba el canal en silencio y el
+            // log decia "publicado" igual.
+            template.setConfirmCallback((correlacion, ack, causa) -> {
+                if (!ack) {
+                    log.error("RabbitMQ rechazo el evento {}: {}",
+                            correlacion == null ? "?" : correlacion.getId(), causa);
+                }
+            });
+        };
     }
 }

@@ -5,6 +5,7 @@ import com.campuslab.catalog.model.ResourceType;
 import com.campuslab.catalog.repository.CatalogResourceRepository;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.springframework.amqp.rabbit.connection.CorrelationData;
 import org.springframework.amqp.rabbit.core.RabbitTemplate;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
@@ -14,6 +15,7 @@ import org.springframework.http.MediaType;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.web.servlet.MockMvc;
 
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.ArgumentMatchers.contains;
 import static org.mockito.ArgumentMatchers.eq;
@@ -82,7 +84,7 @@ class MsCampuslabCatalogApplicationTests {
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.stockCupo").value(0));
 
-        verify(rabbitTemplate).convertAndSend(eq("cmd.topic"), eq("email.stock-agotado"), contains("STOCK_AGOTADO"));
+        verify(rabbitTemplate).convertAndSend(eq("cmd.topic"), eq("email.stock-agotado"), contains("STOCK_AGOTADO"), any(CorrelationData.class));
     }
 
     @Test
@@ -94,7 +96,7 @@ class MsCampuslabCatalogApplicationTests {
                         .content("{\"stockCupo\":5}"))
                 .andExpect(status().isOk());
 
-        verify(rabbitTemplate, never()).convertAndSend(anyString(), anyString(), anyString());
+        verify(rabbitTemplate, never()).convertAndSend(anyString(), anyString(), anyString(), any(CorrelationData.class));
     }
 
     @Test

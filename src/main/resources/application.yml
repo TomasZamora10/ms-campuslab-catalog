@@ -42,6 +42,10 @@ spring:
     port: ${RABBITMQ_PORT:5672}
     username: ${RABBITMQ_USERNAME:admin}
     password: ${RABBITMQ_PASSWORD:admin_dev}
+    # Si el broker no responde, fallar en 5 s (por defecto son 60 s y el
+    # PUT de stock quedaba colgado ese tiempo).
+    connection-timeout: 5s
+    publisher-confirm-type: correlated
     # Mensajes que no coinciden con ningun binding vuelven al productor y se
     # registran en el log (ver RabbitMqConfig#mensajesNoEnrutadosCustomizer).
     publisher-returns: true
